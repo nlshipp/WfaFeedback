@@ -121,14 +121,14 @@
             // 
             // PeriodicPeriod
             // 
-            this.PeriodicPeriod.LargeChange = 1000;
+            this.PeriodicPeriod.LargeChange = 10000;
             this.PeriodicPeriod.Location = new System.Drawing.Point(24, 153);
-            this.PeriodicPeriod.Maximum = 500000;
+            this.PeriodicPeriod.Maximum = 1000000;
             this.PeriodicPeriod.Name = "PeriodicPeriod";
             this.PeriodicPeriod.Size = new System.Drawing.Size(304, 45);
-            this.PeriodicPeriod.SmallChange = 100;
+            this.PeriodicPeriod.SmallChange = 1000;
             this.PeriodicPeriod.TabIndex = 6;
-            this.PeriodicPeriod.TickFrequency = 20000;
+            this.PeriodicPeriod.TickFrequency = 25000;
             this.PeriodicPeriod.Scroll += new System.EventHandler(this.PeriodicScroll);
             // 
             // PeriodicPhaseLabel
@@ -823,10 +823,9 @@
             this.Controls.Add(this.gbTypeContainer);
             this.Name = "Form1";
             this.Text = "Form1";
+            this.Activated += new System.EventHandler(this.Form1_Enter);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.Enter += new System.EventHandler(this.Form1_Enter);
-            this.Activated += new System.EventHandler(this.Form1_Enter);
-
             ((System.ComponentModel.ISupportInitialize)(this.PeriodicPeriod)).EndInit();
             this.GroupRampForce.ResumeLayout(false);
             this.GroupRampForce.PerformLayout();
