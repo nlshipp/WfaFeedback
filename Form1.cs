@@ -77,7 +77,7 @@ namespace WfaFeedback
 
         private void Form1_Enter(object sender, EventArgs e)
         {
-            //Initialize the DirectInput objects
+            // Reclaim FFB joystick
             if (applicationDevice != null)
             {
                 try
@@ -93,8 +93,14 @@ namespace WfaFeedback
         {
             EffectDescription description;
 
-//            if (null != effectSelected)
-//                effectSelected.Unload();
+            if (null != effectSelected)
+            {
+                try
+                {
+                    effectSelected.effect.Unload();
+                }
+                catch { }
+            }
 
             description = (EffectDescription)lstEffects.Items[lstEffects.SelectedIndex];
             effectSelected = description;
@@ -217,11 +223,18 @@ namespace WfaFeedback
 
             if (!isChanging)
             {
-                eff.Envelope = new Envelope();
-                eff.Envelope.AttackLevel = EnvelopeAttackLevel.Value;
-                eff.Envelope.AttackTime = EnvelopeAttackTime.Value;
-                eff.Envelope.FadeLevel = EnvelopeFadeLevel.Value;
-                eff.Envelope.FadeTime = EnvelopeFadeTime.Value;
+                if (!chkUseEnvelope.Checked)
+                {
+                    eff.Envelope = null;
+                }
+                else
+                {
+                    eff.Envelope = new Envelope();
+                    eff.Envelope.AttackLevel = EnvelopeAttackLevel.Value;
+                    eff.Envelope.AttackTime = EnvelopeAttackTime.Value;
+                    eff.Envelope.FadeLevel = EnvelopeFadeLevel.Value;
+                    eff.Envelope.FadeTime = EnvelopeFadeTime.Value;
+                }
 
                 // Some feedback drivers will fail when setting parameters that aren't supported by
                 // an effect. DirectInput will will in turn pass back the driver error to the application.
@@ -581,6 +594,13 @@ namespace WfaFeedback
             EffectParameters eff = ChangeParameter();
             UpdateConstantGroupBox(eff);
 
+            try
+            {
+                effectSelected.effect.SetParameters(eff, EffectParameterFlags.TypeSpecificParameters);
+            }
+            //            catch (DirectXException) { }
+            catch (SharpDX.SharpDXException ex) { MessageBox.Show(ex.Message); }
+
         }
 
 
@@ -782,8 +802,6 @@ namespace WfaFeedback
                 foreach (EffectInfo ei in applicationDevice.GetEffects(EffectType.All))
                 {
                     // Handles the enumeration of effects.
-
-//                    EffectObject effectSelected;
                     EffectDescription description = new EffectDescription();
                     EffectParameters eff;
 
@@ -823,6 +841,7 @@ namespace WfaFeedback
                 {
                     // If this device has no downloadable effects, end the app.
                     MessageBox.Show("This device does not contain any downloadable effects, app will exit.");
+
                     // The app will validate all DirectInput objects in the frmMain_Load() event.
                     // When one is found missing, this will cause the app to exit.
                 }
