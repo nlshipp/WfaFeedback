@@ -112,6 +112,7 @@ namespace WfaFeedback
             }
             catch (SharpDX.SharpDXException ex) { MessageBox.Show(ex.Message); }
         }
+
         
         /// <summary>
         /// Changes the parameters of an effect.
@@ -185,6 +186,7 @@ namespace WfaFeedback
             return eff;
         }
 
+
         /// <summary>
         /// Changes the direction of an effect.
         /// </summary>
@@ -210,8 +212,6 @@ namespace WfaFeedback
                 MessageBox.Show(ex.Message);
             }
         }
-
-
 
 
         /// <summary>
@@ -252,8 +252,6 @@ namespace WfaFeedback
             }
             return eff;
         }
-
-
 
 
         /// <summary>
@@ -400,8 +398,6 @@ namespace WfaFeedback
         }
 
 
-
-
         /// <summary>
         /// Updates the general parameters controls and labels.
         /// </summary>
@@ -437,8 +433,6 @@ namespace WfaFeedback
         }
 
 
-
-
         /// <summary>
         /// Updates the controls and labels for constant force effects.
         /// </summary>
@@ -447,8 +441,6 @@ namespace WfaFeedback
             ConstantForceMagnitude.Value = eff.Parameters.As<ConstantForce>().Magnitude;
             Magnitude.Text = "Constant Force Magnitude: " + ConstantForceMagnitude.Value;
         }
-
-
 
 
         /// <summary>
@@ -461,8 +453,6 @@ namespace WfaFeedback
             RangeStartLabel.Text = "Range Start: " + RangeStart.Value;
             RangeEndLabel.Text = "Range End: " + RangeEnd.Value;
         }
-
-
 
 
         /// <summary>
@@ -497,8 +487,6 @@ namespace WfaFeedback
         }
 
 
-
-
         /// <summary>
         /// Updates the controls in the Conditional group box.
         /// </summary>
@@ -526,8 +514,6 @@ namespace WfaFeedback
             ConditionalPositiveSaturationLabel.Text = "Positive Saturation: " + ConditionalPositiveSaturation.Value;
 
         }
-
-
 
 
         /// <summary>
@@ -571,8 +557,6 @@ namespace WfaFeedback
         }
 
 
-
-
         /// <summary>
         /// Handles changing the axis on a conditional effect.
         /// </summary>
@@ -584,8 +568,6 @@ namespace WfaFeedback
         }
 
 
-
-
         /// <summary>
         /// Handles the trackbar scroll events for constant effects.
         /// </summary>
@@ -593,17 +575,7 @@ namespace WfaFeedback
         {
             EffectParameters eff = ChangeParameter();
             UpdateConstantGroupBox(eff);
-
-            try
-            {
-                effectSelected.effect.SetParameters(eff, EffectParameterFlags.TypeSpecificParameters);
-            }
-            //            catch (DirectXException) { }
-            catch (SharpDX.SharpDXException ex) { MessageBox.Show(ex.Message); }
-
         }
-
-
 
 
         /// <summary>
@@ -617,8 +589,6 @@ namespace WfaFeedback
         }
 
 
-
-
         /// <summary>
         /// Handles the trackbar scroll events for periodic effects.
         /// </summary>
@@ -626,10 +596,7 @@ namespace WfaFeedback
         {
             EffectParameters eff = ChangeParameter();
             UpdatePeriodicGroupBox(eff);
-
         }
-
-
 
 
         /// <summary>
@@ -648,8 +615,6 @@ namespace WfaFeedback
             UpdateConditionalGroupBox(eff);
 
         }
-
-
 
 
         /// <summary>
@@ -672,8 +637,6 @@ namespace WfaFeedback
                 }
             }
         }
-
-
 
 
         /// <summary>
@@ -810,12 +773,14 @@ namespace WfaFeedback
                         // Can't create a custom force without info from the hardware vendor, so skip this effect.
                         continue;
                     }
+#if false
                     else if (ei.Type.HasFlag(EffectType.Periodic))
                     {
                         // This is to filter out any Periodic effects. There are known
                         // issues with Periodic effects that will be addressed post-developer preview.
                         continue;
                     }
+#endif
                     else if (ei.Type.HasFlag(EffectType.Hardware))
                     {
                         if ((ei.StaticParameters & EffectParameterFlags.TypeSpecificParameters) != 0)
@@ -886,6 +851,16 @@ namespace WfaFeedback
                 rf.Start = 0;
                 rf.End = 10000;
                 eff.Parameters = rf;
+            }
+            if (eif.HasFlag(EffectType.Periodic))
+            {
+                var pf = new PeriodicForce();
+                pf.Magnitude = 1250;
+                pf.Offset = 0;
+                pf.Period = 500000;  // 2 Hz
+                pf.Phase = 0;
+                
+                eff.Parameters = pf;
             }
 
             eff.Gain = 10000;
