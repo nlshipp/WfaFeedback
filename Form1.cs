@@ -41,7 +41,7 @@ namespace WfaFeedback
             {
                 get
                 {
-                    return info.Type & (EffectType.ConstantForce | EffectType.RampForce | EffectType.Periodic | EffectType.Condition);
+                    return info.Type & EffectType.Hardware;  // Hardware == 0xFFu
                 }
                 private set { }
             }
@@ -108,7 +108,7 @@ namespace WfaFeedback
 
             try
             {
-                effectSelected.effect.Start(1);
+                effectSelected.effect.Start(EffectPlayFlags.None);
             }
             catch (SharpDX.SharpDXException ex) { MessageBox.Show(ex.Message); }
         }
@@ -267,7 +267,7 @@ namespace WfaFeedback
             // to cover 2 axes if this is a two axis device. In most cases, conditional 
             // effects will return 1 Condition element that can be applied across 
             // all force-feedback axes.
-            if (eff.Parameters.As<ConditionSet>() != null)
+            if ((eff.Parameters != null) && (eff.Parameters.As<ConditionSet>() != null))
             {
                 ConditionSet cs = eff.Parameters.As<ConditionSet>();
 
@@ -513,6 +513,13 @@ namespace WfaFeedback
             ConditionalPositiveCoefficientLabel.Text = "Positive Coefficient: " + ConditionalPositiveCoefficient.Value;
             ConditionalPositiveSaturationLabel.Text = "Positive Saturation: " + ConditionalPositiveSaturation.Value;
 
+            // change visibility with respect to EffectType flags
+            ConditionalNegativeCoeffcient.Enabled = effectSelected.info.Type.HasFlag(EffectType.TwoCoefficients);
+            ConditionalNegativeCoeffcientLabel.Enabled = effectSelected.info.Type.HasFlag(EffectType.TwoCoefficients);
+            ConditionalNegativeSaturation.Enabled = effectSelected.info.Type.HasFlag(EffectType.TwoSaturations);
+            ConditionalNegativeSaturationLabel.Enabled = effectSelected.info.Type.HasFlag(EffectType.TwoSaturations);
+            ConditionalDeadBand.Enabled = effectSelected.info.Type.HasFlag(EffectType.DeadBand);
+            ConditionalDeadBandLabel.Enabled = effectSelected.info.Type.HasFlag(EffectType.DeadBand);
         }
 
 
@@ -768,7 +775,7 @@ namespace WfaFeedback
                     EffectDescription description = new EffectDescription();
                     EffectParameters eff;
 
-                    if (ei.Type.HasFlag(EffectType.CustomForce))
+                    if (((uint)ei.Type & 0xFFu) == (uint)EffectType.CustomForce)
                     {
                         // Can't create a custom force without info from the hardware vendor, so skip this effect.
                         continue;
@@ -781,11 +788,11 @@ namespace WfaFeedback
                         continue;
                     }
 #endif
-                    else if (ei.Type.HasFlag(EffectType.Hardware))
+                    else if (((uint)ei.Type & 0xFFu) == (uint)EffectType.Hardware)
                     {
-                        if ((ei.StaticParameters & EffectParameterFlags.TypeSpecificParameters) != 0)
+//                        if ((ei.StaticParameters & EffectParameterFlags.TypeSpecificParameters) != 0)
                             // Can't create a hardware force without info from the hardware vendor.
-                            continue;
+//                            continue;
                     }
 
                     // Fill in some generic values for the effect.
@@ -833,42 +840,46 @@ namespace WfaFeedback
             eff.Axes = new int[axis.Length];
 
             eff.Duration = (int)DI.Infinite;
-            if (eif.HasFlag(EffectType.Condition))
-            {
-                var set = new ConditionSet();
-                set.Conditions = new Condition[axis.Length];
-                eff.Parameters = set;
-            }
-            if (eif.HasFlag(EffectType.ConstantForce))
-            {
-                var cf = new ConstantForce();
-                cf.Magnitude = 10000;
-                eff.Parameters = cf;
-            }
-            if (eif.HasFlag(EffectType.RampForce))
-            {
-                var rf = new RampForce();
-                rf.Start = 0;
-                rf.End = 10000;
-                eff.Parameters = rf;
-            }
-            if (eif.HasFlag(EffectType.Periodic))
-            {
-                var pf = new PeriodicForce();
-                pf.Magnitude = 1250;
-                pf.Offset = 0;
-                pf.Period = 500000;  // 2 Hz
-                pf.Phase = 0;
-                
-                eff.Parameters = pf;
-            }
-
             eff.Gain = 10000;
             eff.SamplePeriod = 0;
             eff.TriggerButton = -1;
             eff.TriggerRepeatInterval = -1;
             eff.Flags = EffectFlags.ObjectOffsets | EffectFlags.Cartesian;
             eff.Axes = axis;
+
+            switch ((EffectType)((uint)eif & 0xFFu))
+            {
+                case EffectType.Condition:
+                    var set = new ConditionSet();
+                    set.Conditions = new Condition[axis.Length];
+                    eff.Parameters = set;
+                    break;
+
+                case EffectType.ConstantForce:
+                    var cf = new ConstantForce();
+                    cf.Magnitude = 5000;
+                    eff.Parameters = cf;
+                    break;
+
+                case EffectType.RampForce:
+                    var rf = new RampForce();
+                    rf.Start = 0;
+                    rf.End = 10000;
+                    eff.Parameters = rf;
+                    break;
+
+                case EffectType.Periodic:
+                    var pf = new PeriodicForce();
+                    pf.Magnitude = 1250;
+                    pf.Offset = 0;
+                    pf.Period = 500000;  // 2 Hz
+                    pf.Phase = 0;
+                    eff.Parameters = pf;
+                    break;
+
+                case EffectType.Hardware:
+                    break;
+            }
 
             return eff;
         }
