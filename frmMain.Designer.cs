@@ -1,6 +1,6 @@
 ﻿namespace WfaFeedback
 {
-    partial class Form1
+    partial class frmMain
     {
         /// <summary>
         /// Required designer variable.
@@ -140,14 +140,61 @@
             this.PeriodicPhaseLabel.TabIndex = 5;
             this.PeriodicPhaseLabel.Text = "Phase: 0";
             // 
-            // NorthWest
+            // PeriodicPhase
             // 
-            this.NorthWest.Location = new System.Drawing.Point(40, 64);
-            this.NorthWest.Name = "NorthWest";
-            this.NorthWest.Size = new System.Drawing.Size(16, 24);
-            this.NorthWest.TabIndex = 1;
-            this.NorthWest.Tag = "-1,-1";
-            this.NorthWest.CheckedChanged += new System.EventHandler(this.DirectionChanged);
+            this.PeriodicPhase.LargeChange = 100;
+            this.PeriodicPhase.Location = new System.Drawing.Point(24, 110);
+            this.PeriodicPhase.Maximum = 35999;
+            this.PeriodicPhase.Name = "PeriodicPhase";
+            this.PeriodicPhase.Size = new System.Drawing.Size(304, 45);
+            this.PeriodicPhase.SmallChange = 10;
+            this.PeriodicPhase.TabIndex = 4;
+            this.PeriodicPhase.TickFrequency = 1000;
+            this.PeriodicPhase.Scroll += new System.EventHandler(this.PeriodicScroll);
+            // 
+            // PeriodicOffsetLabel
+            // 
+            this.PeriodicOffsetLabel.AutoSize = true;
+            this.PeriodicOffsetLabel.Location = new System.Drawing.Point(96, 58);
+            this.PeriodicOffsetLabel.Name = "PeriodicOffsetLabel";
+            this.PeriodicOffsetLabel.Size = new System.Drawing.Size(47, 13);
+            this.PeriodicOffsetLabel.TabIndex = 3;
+            this.PeriodicOffsetLabel.Text = "Offset: 0";
+            // 
+            // PeriodicOffset
+            // 
+            this.PeriodicOffset.LargeChange = 100;
+            this.PeriodicOffset.Location = new System.Drawing.Point(24, 67);
+            this.PeriodicOffset.Maximum = 10000;
+            this.PeriodicOffset.Minimum = -10000;
+            this.PeriodicOffset.Name = "PeriodicOffset";
+            this.PeriodicOffset.Size = new System.Drawing.Size(304, 45);
+            this.PeriodicOffset.SmallChange = 10;
+            this.PeriodicOffset.TabIndex = 2;
+            this.PeriodicOffset.TickFrequency = 1000;
+            this.PeriodicOffset.Scroll += new System.EventHandler(this.PeriodicScroll);
+            // 
+            // PeriodicMagnitudeLabel
+            // 
+            this.PeriodicMagnitudeLabel.AutoSize = true;
+            this.PeriodicMagnitudeLabel.Location = new System.Drawing.Point(96, 16);
+            this.PeriodicMagnitudeLabel.Name = "PeriodicMagnitudeLabel";
+            this.PeriodicMagnitudeLabel.Size = new System.Drawing.Size(69, 13);
+            this.PeriodicMagnitudeLabel.TabIndex = 1;
+            this.PeriodicMagnitudeLabel.Text = "Magnitude: 0";
+            // 
+            // PeriodicMagnitude
+            // 
+            this.PeriodicMagnitude.LargeChange = 1000;
+            this.PeriodicMagnitude.Location = new System.Drawing.Point(24, 24);
+            this.PeriodicMagnitude.Maximum = 10000;
+            this.PeriodicMagnitude.Name = "PeriodicMagnitude";
+            this.PeriodicMagnitude.Size = new System.Drawing.Size(304, 45);
+            this.PeriodicMagnitude.SmallChange = 100;
+            this.PeriodicMagnitude.TabIndex = 0;
+            this.PeriodicMagnitude.TickFrequency = 1000;
+            this.PeriodicMagnitude.Value = 5000;
+            this.PeriodicMagnitude.Scroll += new System.EventHandler(this.PeriodicScroll);
             // 
             // GroupRampForce
             // 
@@ -440,6 +487,15 @@
             this.West.Tag = "-2,0";
             this.West.CheckedChanged += new System.EventHandler(this.DirectionChanged);
             // 
+            // NorthWest
+            // 
+            this.NorthWest.Location = new System.Drawing.Point(40, 64);
+            this.NorthWest.Name = "NorthWest";
+            this.NorthWest.Size = new System.Drawing.Size(16, 24);
+            this.NorthWest.TabIndex = 1;
+            this.NorthWest.Tag = "-1,-1";
+            this.NorthWest.CheckedChanged += new System.EventHandler(this.DirectionChanged);
+            // 
             // North
             // 
             this.North.Location = new System.Drawing.Point(80, 40);
@@ -448,18 +504,6 @@
             this.North.TabIndex = 0;
             this.North.Tag = "0,-2";
             this.North.CheckedChanged += new System.EventHandler(this.DirectionChanged);
-            // 
-            // PeriodicPhase
-            // 
-            this.PeriodicPhase.LargeChange = 100;
-            this.PeriodicPhase.Location = new System.Drawing.Point(24, 110);
-            this.PeriodicPhase.Maximum = 35999;
-            this.PeriodicPhase.Name = "PeriodicPhase";
-            this.PeriodicPhase.Size = new System.Drawing.Size(304, 45);
-            this.PeriodicPhase.SmallChange = 10;
-            this.PeriodicPhase.TabIndex = 4;
-            this.PeriodicPhase.TickFrequency = 1000;
-            this.PeriodicPhase.Scroll += new System.EventHandler(this.PeriodicScroll);
             // 
             // Label1
             // 
@@ -766,51 +810,7 @@
             this.GroupPeriodForce.Text = "Periodic Force";
             this.GroupPeriodForce.Visible = false;
             // 
-            // PeriodicOffsetLabel
-            // 
-            this.PeriodicOffsetLabel.AutoSize = true;
-            this.PeriodicOffsetLabel.Location = new System.Drawing.Point(96, 58);
-            this.PeriodicOffsetLabel.Name = "PeriodicOffsetLabel";
-            this.PeriodicOffsetLabel.Size = new System.Drawing.Size(47, 13);
-            this.PeriodicOffsetLabel.TabIndex = 3;
-            this.PeriodicOffsetLabel.Text = "Offset: 0";
-            // 
-            // PeriodicOffset
-            // 
-            this.PeriodicOffset.LargeChange = 100;
-            this.PeriodicOffset.Location = new System.Drawing.Point(24, 67);
-            this.PeriodicOffset.Maximum = 10000;
-            this.PeriodicOffset.Minimum = -10000;
-            this.PeriodicOffset.Name = "PeriodicOffset";
-            this.PeriodicOffset.Size = new System.Drawing.Size(304, 45);
-            this.PeriodicOffset.SmallChange = 10;
-            this.PeriodicOffset.TabIndex = 2;
-            this.PeriodicOffset.TickFrequency = 1000;
-            this.PeriodicOffset.Scroll += new System.EventHandler(this.PeriodicScroll);
-            // 
-            // PeriodicMagnitudeLabel
-            // 
-            this.PeriodicMagnitudeLabel.AutoSize = true;
-            this.PeriodicMagnitudeLabel.Location = new System.Drawing.Point(96, 16);
-            this.PeriodicMagnitudeLabel.Name = "PeriodicMagnitudeLabel";
-            this.PeriodicMagnitudeLabel.Size = new System.Drawing.Size(69, 13);
-            this.PeriodicMagnitudeLabel.TabIndex = 1;
-            this.PeriodicMagnitudeLabel.Text = "Magnitude: 0";
-            // 
-            // PeriodicMagnitude
-            // 
-            this.PeriodicMagnitude.LargeChange = 1000;
-            this.PeriodicMagnitude.Location = new System.Drawing.Point(24, 24);
-            this.PeriodicMagnitude.Maximum = 10000;
-            this.PeriodicMagnitude.Name = "PeriodicMagnitude";
-            this.PeriodicMagnitude.Size = new System.Drawing.Size(304, 45);
-            this.PeriodicMagnitude.SmallChange = 100;
-            this.PeriodicMagnitude.TabIndex = 0;
-            this.PeriodicMagnitude.TickFrequency = 1000;
-            this.PeriodicMagnitude.Value = 5000;
-            this.PeriodicMagnitude.Scroll += new System.EventHandler(this.PeriodicScroll);
-            // 
-            // Form1
+            // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -821,11 +821,12 @@
             this.Controls.Add(this.gbGeneralParams);
             this.Controls.Add(this.lstEffects);
             this.Controls.Add(this.gbTypeContainer);
-            this.Name = "Form1";
-            this.Text = "Form1";
-            this.Activated += new System.EventHandler(this.Form1_Enter);
-            this.Load += new System.EventHandler(this.Form1_Load);
-            this.Enter += new System.EventHandler(this.Form1_Enter);
+            this.Name = "frmMain";
+            this.Text = "WfaFeedback";
+            this.Closing += new System.ComponentModel.CancelEventHandler(this.frmMain_Closing);
+            this.Activated += new System.EventHandler(this.frmMain_Activated);
+            this.Load += new System.EventHandler(this.frmMain_Load);
+            this.Enter += new System.EventHandler(this.frmMain_Activated);
             ((System.ComponentModel.ISupportInitialize)(this.PeriodicPeriod)).EndInit();
             this.GroupRampForce.ResumeLayout(false);
             this.GroupRampForce.PerformLayout();

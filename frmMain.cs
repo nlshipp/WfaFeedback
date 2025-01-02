@@ -20,7 +20,7 @@ namespace WfaFeedback
         Degrees = 100
     }
 
-    public partial class Form1 : Form
+    public partial class frmMain : Form
     {
         /// <summary>
         /// This structure will contain information about an effect,
@@ -53,41 +53,209 @@ namespace WfaFeedback
         private int[] axis; //Holds the FF axes offsets.
         private bool isChanging; // Flag that is set when that app is changing control values.
 
-        public Form1()
+        public frmMain()
         {
             InitializeComponent();
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+
+        /// <summary>
+        /// Initializes DirectInput.
+        /// </summary>
+        private bool InitializeDirectInput()
         {
-            //Initialize the DirectInput objects
-            if (!InitializeDirectInput())
+            try
             {
-                Close();
-            }
-            else
-            {
+                var Manager = new DirectInput();
+
+                //Enumerate all joysticks that are attached to the system and have FF capabilities
+                foreach (DeviceInstance instanceDevice in Manager.GetDevices(DeviceClass.GameControl, DeviceEnumerationFlags.ForceFeedback | DeviceEnumerationFlags.AttachedOnly))
+                {
+                    applicationDevice = new Joystick(Manager, instanceDevice.InstanceGuid);
+
+                    foreach (DeviceObjectInstance instanceObject in applicationDevice.GetObjects(DeviceObjectTypeFlags.Axis | DeviceObjectTypeFlags.ForceFeedbackActuator))  // Get info about all the FF axis on the device
+                    {
+                        int[] temp;
+
+                        if ((instanceObject.Aspect & ObjectAspect.ForceFeedbackActuator) != 0)
+                        {
+                            if (null != axis)
+                            {
+                                temp = new int[axis.Length + 1];
+                                axis.CopyTo(temp, 0);
+                                axis = temp;
+                            }
+                            else
+                            {
+                                axis = new int[1];
+                            }
+
+                            // Store the offset of each axis.
+                            // this must match the offset in the DInput DIJoyState, not the offset returned on instanceObject
+                            // axis[axis.Length - 1] = instanceObject.Offset;
+                            // HACK: ffb uses 0 and 4 as offsets, so force to that.
+                            axis[axis.Length - 1] = (axis.Length - 1) * 4;
+                            // Don't need to enumerate any more if 2 were found.
+                            if (2 == axis.Length)
+                                break;
+                        }
+                    }
+
+                    if (null == applicationDevice)
+                    {
+                        MessageBox.Show("No force feedback device was detected. Sample will now exit.", "No suitable device");
+                        return false;
+                    }
+
+                    if (axis.Length - 1 >= 1)
+                        // Grab any device that contains at least one axis.
+                        break;
+                    else
+                    {
+                        axis = null;
+                        applicationDevice.Dispose();
+                        applicationDevice = null;
+                    }
+                }
+
+                // Set the cooperative level of the device as an exclusive
+                // foreground device, and attach it to the form's window handle.
+                IntPtr handle = this.Handle;
+                IntPtr handle2 = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
+                applicationDevice.SetCooperativeLevel(handle, CooperativeLevel.Foreground | CooperativeLevel.Exclusive);
+
                 try
                 {
                     applicationDevice.Acquire();
                 }
-                catch { }
-            }
-        }
+                catch
+                { }
 
-        private void Form1_Enter(object sender, EventArgs e)
-        {
-            // Reclaim FFB joystick
-            if (applicationDevice != null)
-            {
-                try
+                //Turn off autocenter
+                applicationDevice.Properties.AutoCenter = false;
+
+                //  applicationDevice.SendForceFeedbackCommand(ForceFeedbackCommand.Reset);
+
+
+                //Set the format of the device to that of a joystick
+                //                applicationDevice.SetDataFormat(DeviceDataFormat.Joystick);
+                //Enumerate all the effects on the device
+
+                foreach (EffectInfo ei in applicationDevice.GetEffects(EffectType.All))
                 {
-                    applicationDevice.Acquire();
+                    // Handles the enumeration of effects.
+                    EffectDescription description = new EffectDescription();
+                    EffectParameters eff;
+
+                    if (((uint)ei.Type & 0xFFu) == (uint)EffectType.CustomForce)
+                    {
+                        // Can't create a custom force without info from the hardware vendor, so skip this effect.
+                        continue;
+                    }
+#if false
+                    else if (ei.Type.HasFlag(EffectType.Periodic))
+                    {
+                        // This is to filter out any Periodic effects. There are known
+                        // issues with Periodic effects that will be addressed post-developer preview.
+                        continue;
+                    }
+#endif
+                    else if (((uint)ei.Type & 0xFFu) == (uint)EffectType.Hardware)
+                    {
+//                        if ((ei.StaticParameters & EffectParameterFlags.TypeSpecificParameters) != 0)
+                            // Can't create a hardware force without info from the hardware vendor.
+//                            continue;
+                    }
+
+                    // Fill in some generic values for the effect.
+                    eff = FillEffStruct(ei.Type);
+
+                    // Create the effect, using the passed in guid.
+                    // Fill in the EffectDescription structure.
+                    description.effect = new Effect(applicationDevice, ei.Guid, eff);
+                    description.info = ei;
+                    description.parameters = eff;
+
+                    // Add this effect to the listbox, displaying the name of the effect.
+                    lstEffects.Items.Add(description);
                 }
-                catch { }
+
+
+                if (0 == lstEffects.Items.Count)
+                {
+                    // If this device has no downloadable effects, end the app.
+                    MessageBox.Show("This device does not contain any downloadable effects, app will exit.");
+
+                    // The app will validate all DirectInput objects in the frmMain_Load() event.
+                    // When one is found missing, this will cause the app to exit.
+                }
+
+                // Make the first index of the listbox selected
+                lstEffects.SelectedIndex = 0;
+                return true;
+            }
+            catch (SharpDX.SharpDXException  e)
+            {
+                MessageBox.Show("Unable to initialize DirectInput, app will exit." + e.Message);
+                return false;
             }
         }
 
+
+        /// <summary>
+        /// Fills in generic values in an effect struct.
+        /// </summary>
+        private EffectParameters FillEffStruct(EffectType eif)
+        {
+            EffectParameters eff = new EffectParameters();
+
+            eff.Directions = new int[axis.Length];
+            eff.Axes = new int[axis.Length];
+
+            eff.Duration = (int)DI.Infinite;
+            eff.Gain = 3300;  // 10000
+            eff.SamplePeriod = 0;
+            eff.TriggerButton = -1;
+            eff.TriggerRepeatInterval = -1;
+            eff.Flags = EffectFlags.ObjectOffsets | EffectFlags.Cartesian;
+            eff.Axes = axis;
+
+            switch ((EffectType)((uint)eif & 0xFFu))
+            {
+                case EffectType.Condition:
+                    var set = new ConditionSet();
+                    set.Conditions = new Condition[axis.Length];
+                    eff.Parameters = set;
+                    break;
+
+                case EffectType.ConstantForce:
+                    var cf = new ConstantForce();
+                    cf.Magnitude = 5000;
+                    eff.Parameters = cf;
+                    break;
+
+                case EffectType.RampForce:
+                    var rf = new RampForce();
+                    rf.Start = 0;
+                    rf.End = 10000;
+                    eff.Parameters = rf;
+                    break;
+
+                case EffectType.Periodic:
+                    var pf = new PeriodicForce();
+                    pf.Magnitude = 1250;
+                    pf.Offset = 0;
+                    pf.Period = 500000;  // 2 Hz
+                    pf.Phase = 0;
+                    eff.Parameters = pf;
+                    break;
+
+                case EffectType.Hardware:
+                    break;
+            }
+
+            return eff;
+        }
 
         private void lstEffects_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -110,7 +278,17 @@ namespace WfaFeedback
             {
                 effectSelected.effect.Start(EffectPlayFlags.None);
             }
-            catch (SharpDX.SharpDXException ex) { MessageBox.Show(ex.Message); }
+            catch (SharpDX.SharpDXException ex)
+            {
+                if (ex.ResultCode == ResultCode.NotExclusiveAcquired)
+                {
+                    MessageBox.Show("Non exclusive access acquired");
+                }
+                else
+                {
+                    MessageBox.Show(ex.Message);
+                }
+            }
         }
 
         
@@ -675,9 +853,6 @@ namespace WfaFeedback
             catch (SharpDX.SharpDXException  ex) { MessageBox.Show(ex.Message); }
         }
 
-
-
-
         private void EnvChanged(object sender, System.EventArgs e)
         {
             EffectParameters eff = new EffectParameters();
@@ -686,202 +861,66 @@ namespace WfaFeedback
             UpdateEnvParamsGroupBox(eff);
         }
 
-
-        /// <summary>
-        /// Initializes DirectInput.
-        /// </summary>
-        private bool InitializeDirectInput()
+        private void frmMain_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            try
+            DestroyObjects();
+        }
+
+        private void frmMain_Load(object sender, System.EventArgs e)
+        {
+            //Initialize the DirectInput objects
+            if (!InitializeDirectInput())
             {
-                var Manager = new DirectInput();
-
-                //Enumerate all joysticks that are attached to the system and have FF capabilities
-                foreach (DeviceInstance instanceDevice in Manager.GetDevices(DeviceClass.GameControl, DeviceEnumerationFlags.ForceFeedback | DeviceEnumerationFlags.AttachedOnly))
-                {
-                    applicationDevice = new Joystick(Manager, instanceDevice.InstanceGuid);
-
-                    foreach (DeviceObjectInstance instanceObject in applicationDevice.GetObjects(DeviceObjectTypeFlags.Axis | DeviceObjectTypeFlags.ForceFeedbackActuator))  // Get info about all the FF axis on the device
-                    {
-                        int[] temp;
-
-                        if ((instanceObject.Aspect & ObjectAspect.ForceFeedbackActuator) != 0)
-                        {
-                            if (null != axis)
-                            {
-                                temp = new int[axis.Length + 1];
-                                axis.CopyTo(temp, 0);
-                                axis = temp;
-                            }
-                            else
-                            {
-                                axis = new int[1];
-                            }
-
-                            // Store the offset of each axis.
-                            // this must match the offset in the DInput DIJoyState, not the offset returned on instanceObject
-                            // axis[axis.Length - 1] = instanceObject.Offset;
-                            // HACK: ffb uses 0 and 4 as offsets, so force to that.
-                            axis[axis.Length - 1] = (axis.Length - 1) * 4;
-                            // Don't need to enumerate any more if 2 were found.
-                            if (2 == axis.Length)
-                                break;
-                        }
-                    }
-
-                    if (null == applicationDevice)
-                    {
-                        MessageBox.Show("No force feedback device was detected. Sample will now exit.", "No suitable device");
-                        return false;
-                    }
-
-                    if (axis.Length - 1 >= 1)
-                        // Grab any device that contains at least one axis.
-                        break;
-                    else
-                    {
-                        axis = null;
-                        applicationDevice.Dispose();
-                        applicationDevice = null;
-                    }
-                }
-
-                // Set the cooperative level of the device as an exclusive
-                // foreground device, and attach it to the form's window handle.
-                IntPtr handle = this.Handle;
-                IntPtr handle2 = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
-                applicationDevice.SetCooperativeLevel(handle, CooperativeLevel.Foreground | CooperativeLevel.Exclusive);
-
+                Close();
+            }
+            else
+            {
                 try
                 {
                     applicationDevice.Acquire();
                 }
-                catch
-                { }
-
-                //Turn off autocenter
-                applicationDevice.Properties.AutoCenter = false;
-
-                //  applicationDevice.SendForceFeedbackCommand(ForceFeedbackCommand.Reset);
-
-
-                //Set the format of the device to that of a joystick
-                //                applicationDevice.SetDataFormat(DeviceDataFormat.Joystick);
-                //Enumerate all the effects on the device
-
-                foreach (EffectInfo ei in applicationDevice.GetEffects(EffectType.All))
-                {
-                    // Handles the enumeration of effects.
-                    EffectDescription description = new EffectDescription();
-                    EffectParameters eff;
-
-                    if (((uint)ei.Type & 0xFFu) == (uint)EffectType.CustomForce)
-                    {
-                        // Can't create a custom force without info from the hardware vendor, so skip this effect.
-                        continue;
-                    }
-#if false
-                    else if (ei.Type.HasFlag(EffectType.Periodic))
-                    {
-                        // This is to filter out any Periodic effects. There are known
-                        // issues with Periodic effects that will be addressed post-developer preview.
-                        continue;
-                    }
-#endif
-                    else if (((uint)ei.Type & 0xFFu) == (uint)EffectType.Hardware)
-                    {
-//                        if ((ei.StaticParameters & EffectParameterFlags.TypeSpecificParameters) != 0)
-                            // Can't create a hardware force without info from the hardware vendor.
-//                            continue;
-                    }
-
-                    // Fill in some generic values for the effect.
-                    eff = FillEffStruct(ei.Type);
-
-                    // Create the effect, using the passed in guid.
-                    // Fill in the EffectDescription structure.
-                    description.effect = new Effect(applicationDevice, ei.Guid, eff);
-                    description.info = ei;
-                    description.parameters = eff;
-
-                    // Add this effect to the listbox, displaying the name of the effect.
-                    lstEffects.Items.Add(description);
-                }
-
-
-                if (0 == lstEffects.Items.Count)
-                {
-                    // If this device has no downloadable effects, end the app.
-                    MessageBox.Show("This device does not contain any downloadable effects, app will exit.");
-
-                    // The app will validate all DirectInput objects in the frmMain_Load() event.
-                    // When one is found missing, this will cause the app to exit.
-                }
-
-                // Make the first index of the listbox selected
-                lstEffects.SelectedIndex = 0;
-                return true;
-            }
-            catch (SharpDX.SharpDXException  e)
-            {
-                MessageBox.Show("Unable to initialize DirectInput, app will exit." + e.Message);
-                return false;
+                catch { }
             }
         }
 
         /// <summary>
-        /// Fills in generic values in an effect struct.
+        /// Destroys all objects.
         /// </summary>
-        private EffectParameters FillEffStruct(EffectType eif)
+        private void DestroyObjects()
         {
-            EffectParameters eff = new EffectParameters();
+            if (null == applicationDevice)
+                return;
 
-            eff.Directions = new int[axis.Length];
-            eff.Axes = new int[axis.Length];
-
-            eff.Duration = (int)DI.Infinite;
-            eff.Gain = 10000;
-            eff.SamplePeriod = 0;
-            eff.TriggerButton = -1;
-            eff.TriggerRepeatInterval = -1;
-            eff.Flags = EffectFlags.ObjectOffsets | EffectFlags.Cartesian;
-            eff.Axes = axis;
-
-            switch ((EffectType)((uint)eif & 0xFFu))
+            try
             {
-                case EffectType.Condition:
-                    var set = new ConditionSet();
-                    set.Conditions = new Condition[axis.Length];
-                    eff.Parameters = set;
-                    break;
+                if (null != effectSelected)
+                    effectSelected.effect.Stop();
 
-                case EffectType.ConstantForce:
-                    var cf = new ConstantForce();
-                    cf.Magnitude = 5000;
-                    eff.Parameters = cf;
-                    break;
+                foreach (EffectDescription description in lstEffects.Items)
+                {
+                    if (null != description.effect)
+                        description.effect.Dispose();
+                }
 
-                case EffectType.RampForce:
-                    var rf = new RampForce();
-                    rf.Start = 0;
-                    rf.End = 10000;
-                    eff.Parameters = rf;
-                    break;
+                applicationDevice.Unacquire();
+                applicationDevice.Properties.AutoCenter = true;
 
-                case EffectType.Periodic:
-                    var pf = new PeriodicForce();
-                    pf.Magnitude = 1250;
-                    pf.Offset = 0;
-                    pf.Period = 500000;  // 2 Hz
-                    pf.Phase = 0;
-                    eff.Parameters = pf;
-                    break;
-
-                case EffectType.Hardware:
-                    break;
             }
-
-            return eff;
+            catch  { }
         }
+
+        private void frmMain_Activated(object sender, System.EventArgs e)
+        {
+            // Reclaim FFB joystick
+            if (applicationDevice != null)
+            {
+                try
+                {
+                    applicationDevice.Acquire();
+                }
+                catch { }
+            }
+        }
+
     }
 }
