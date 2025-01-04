@@ -121,15 +121,17 @@ namespace WfaFeedback
                 // Set the cooperative level of the device as an exclusive
                 // foreground device, and attach it to the form's window handle.
                 IntPtr handle = this.Handle;
-                IntPtr handle2 = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
+//                IntPtr handle2 = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
                 applicationDevice.SetCooperativeLevel(handle, CooperativeLevel.Foreground | CooperativeLevel.Exclusive);
 
                 try
                 {
                     applicationDevice.Acquire();
                 }
-                catch
-                { }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Exclusive acquire failed error " + ex.Message);
+                }
 
                 //Turn off autocenter
                 applicationDevice.Properties.AutoCenter = false;
@@ -213,7 +215,7 @@ namespace WfaFeedback
             eff.Axes = new int[axis.Length];
 
             eff.Duration = (int)DI.Infinite;
-            eff.Gain = 3300;  // 10000
+            eff.Gain = 10000;
             eff.SamplePeriod = 0;
             eff.TriggerButton = -1;
             eff.TriggerRepeatInterval = -1;
@@ -251,6 +253,7 @@ namespace WfaFeedback
                     break;
 
                 case EffectType.Hardware:
+                    eff.Gain = 5000;
                     break;
             }
 
@@ -502,6 +505,9 @@ namespace WfaFeedback
                     Current = GroupRampForce;
                     UpdateRampGroupBox(eff);
                     break;
+                case EffectType.Hardware:
+                    Current = null;
+                    break;
             }
 
             foreach (GroupBox target in gbTypeContainer.Controls)
@@ -591,10 +597,10 @@ namespace WfaFeedback
             else
                 GeneralGain.Value = eff.Gain;
 
-            if (eff.SamplePeriod > GeneralPeriod.Maximum)
+            if (eff.SamplePeriod / 1000 > GeneralPeriod.Maximum)
                 GeneralPeriod.Value = GeneralPeriod.Maximum;
             else
-                GeneralPeriod.Value = eff.SamplePeriod;
+                GeneralPeriod.Value = eff.SamplePeriod / 1000;
 
             if ((int)DI.Infinite == eff.Duration)
                 GeneralDurationLabel.Text = "Effect Duration: Infinite";
@@ -606,7 +612,7 @@ namespace WfaFeedback
             if (0 == eff.SamplePeriod)
                 GeneralPeriodLabel.Text = "Sample Rate: Default";
             else
-                GeneralPeriodLabel.Text = "Sample Period: " + eff.SamplePeriod;
+                GeneralPeriodLabel.Text = "Sample Period: " + (eff.SamplePeriod / 1000.0) + " ms "  + (float)(DI.Seconds) / eff.SamplePeriod + " Hz";
 
         }
 
@@ -837,7 +843,7 @@ namespace WfaFeedback
                 eff.Duration = GeneralDuration.Value * (int)DI.Seconds;
 
             eff.Gain = GeneralGain.Value;
-            eff.SamplePeriod = GeneralPeriod.Value;
+            eff.SamplePeriod = GeneralPeriod.Value * 1000;
 
             UpdateGeneralParamsGroupBox(eff);
 
@@ -921,6 +927,5 @@ namespace WfaFeedback
                 catch { }
             }
         }
-
     }
 }

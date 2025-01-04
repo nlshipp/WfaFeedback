@@ -140,61 +140,14 @@
             this.PeriodicPhaseLabel.TabIndex = 5;
             this.PeriodicPhaseLabel.Text = "Phase: 0";
             // 
-            // PeriodicPhase
+            // NorthWest
             // 
-            this.PeriodicPhase.LargeChange = 100;
-            this.PeriodicPhase.Location = new System.Drawing.Point(24, 110);
-            this.PeriodicPhase.Maximum = 35999;
-            this.PeriodicPhase.Name = "PeriodicPhase";
-            this.PeriodicPhase.Size = new System.Drawing.Size(304, 45);
-            this.PeriodicPhase.SmallChange = 10;
-            this.PeriodicPhase.TabIndex = 4;
-            this.PeriodicPhase.TickFrequency = 1000;
-            this.PeriodicPhase.Scroll += new System.EventHandler(this.PeriodicScroll);
-            // 
-            // PeriodicOffsetLabel
-            // 
-            this.PeriodicOffsetLabel.AutoSize = true;
-            this.PeriodicOffsetLabel.Location = new System.Drawing.Point(96, 58);
-            this.PeriodicOffsetLabel.Name = "PeriodicOffsetLabel";
-            this.PeriodicOffsetLabel.Size = new System.Drawing.Size(47, 13);
-            this.PeriodicOffsetLabel.TabIndex = 3;
-            this.PeriodicOffsetLabel.Text = "Offset: 0";
-            // 
-            // PeriodicOffset
-            // 
-            this.PeriodicOffset.LargeChange = 100;
-            this.PeriodicOffset.Location = new System.Drawing.Point(24, 67);
-            this.PeriodicOffset.Maximum = 10000;
-            this.PeriodicOffset.Minimum = -10000;
-            this.PeriodicOffset.Name = "PeriodicOffset";
-            this.PeriodicOffset.Size = new System.Drawing.Size(304, 45);
-            this.PeriodicOffset.SmallChange = 10;
-            this.PeriodicOffset.TabIndex = 2;
-            this.PeriodicOffset.TickFrequency = 1000;
-            this.PeriodicOffset.Scroll += new System.EventHandler(this.PeriodicScroll);
-            // 
-            // PeriodicMagnitudeLabel
-            // 
-            this.PeriodicMagnitudeLabel.AutoSize = true;
-            this.PeriodicMagnitudeLabel.Location = new System.Drawing.Point(96, 16);
-            this.PeriodicMagnitudeLabel.Name = "PeriodicMagnitudeLabel";
-            this.PeriodicMagnitudeLabel.Size = new System.Drawing.Size(69, 13);
-            this.PeriodicMagnitudeLabel.TabIndex = 1;
-            this.PeriodicMagnitudeLabel.Text = "Magnitude: 0";
-            // 
-            // PeriodicMagnitude
-            // 
-            this.PeriodicMagnitude.LargeChange = 1000;
-            this.PeriodicMagnitude.Location = new System.Drawing.Point(24, 24);
-            this.PeriodicMagnitude.Maximum = 10000;
-            this.PeriodicMagnitude.Name = "PeriodicMagnitude";
-            this.PeriodicMagnitude.Size = new System.Drawing.Size(304, 45);
-            this.PeriodicMagnitude.SmallChange = 100;
-            this.PeriodicMagnitude.TabIndex = 0;
-            this.PeriodicMagnitude.TickFrequency = 1000;
-            this.PeriodicMagnitude.Value = 5000;
-            this.PeriodicMagnitude.Scroll += new System.EventHandler(this.PeriodicScroll);
+            this.NorthWest.Location = new System.Drawing.Point(40, 64);
+            this.NorthWest.Name = "NorthWest";
+            this.NorthWest.Size = new System.Drawing.Size(16, 24);
+            this.NorthWest.TabIndex = 1;
+            this.NorthWest.Tag = "-1,-1";
+            this.NorthWest.CheckedChanged += new System.EventHandler(this.DirectionChanged);
             // 
             // GroupRampForce
             // 
@@ -442,12 +395,10 @@
             // 
             // East
             // 
-            this.East.Checked = true;
             this.East.Location = new System.Drawing.Point(136, 104);
             this.East.Name = "East";
             this.East.Size = new System.Drawing.Size(16, 24);
             this.East.TabIndex = 6;
-            this.East.TabStop = true;
             this.East.Tag = "2,0";
             this.East.CheckedChanged += new System.EventHandler(this.DirectionChanged);
             // 
@@ -487,23 +438,28 @@
             this.West.Tag = "-2,0";
             this.West.CheckedChanged += new System.EventHandler(this.DirectionChanged);
             // 
-            // NorthWest
-            // 
-            this.NorthWest.Location = new System.Drawing.Point(40, 64);
-            this.NorthWest.Name = "NorthWest";
-            this.NorthWest.Size = new System.Drawing.Size(16, 24);
-            this.NorthWest.TabIndex = 1;
-            this.NorthWest.Tag = "-1,-1";
-            this.NorthWest.CheckedChanged += new System.EventHandler(this.DirectionChanged);
-            // 
             // North
             // 
+            this.North.Checked = true;
             this.North.Location = new System.Drawing.Point(80, 40);
             this.North.Name = "North";
             this.North.Size = new System.Drawing.Size(16, 24);
             this.North.TabIndex = 0;
+            this.North.TabStop = true;
             this.North.Tag = "0,-2";
             this.North.CheckedChanged += new System.EventHandler(this.DirectionChanged);
+            // 
+            // PeriodicPhase
+            // 
+            this.PeriodicPhase.LargeChange = 100;
+            this.PeriodicPhase.Location = new System.Drawing.Point(24, 110);
+            this.PeriodicPhase.Maximum = 35999;
+            this.PeriodicPhase.Name = "PeriodicPhase";
+            this.PeriodicPhase.Size = new System.Drawing.Size(304, 45);
+            this.PeriodicPhase.SmallChange = 10;
+            this.PeriodicPhase.TabIndex = 4;
+            this.PeriodicPhase.TickFrequency = 1000;
+            this.PeriodicPhase.Scroll += new System.EventHandler(this.PeriodicScroll);
             // 
             // Label1
             // 
@@ -533,11 +489,12 @@
             // 
             this.GeneralPeriod.AutoSize = false;
             this.GeneralPeriod.Location = new System.Drawing.Point(8, 152);
-            this.GeneralPeriod.Maximum = 100000;
+            this.GeneralPeriod.Maximum = 200;
             this.GeneralPeriod.Name = "GeneralPeriod";
             this.GeneralPeriod.Size = new System.Drawing.Size(208, 45);
+            this.GeneralPeriod.SmallChange = 5;
             this.GeneralPeriod.TabIndex = 5;
-            this.GeneralPeriod.TickFrequency = 5000;
+            this.GeneralPeriod.TickFrequency = 10;
             this.GeneralPeriod.Scroll += new System.EventHandler(this.GenScroll);
             // 
             // GeneralPeriodLabel
@@ -638,9 +595,9 @@
             // 
             this.rbConditionalAxis2.Location = new System.Drawing.Point(160, 176);
             this.rbConditionalAxis2.Name = "rbConditionalAxis2";
-            this.rbConditionalAxis2.Size = new System.Drawing.Size(56, 16);
+            this.rbConditionalAxis2.Size = new System.Drawing.Size(79, 18);
             this.rbConditionalAxis2.TabIndex = 13;
-            this.rbConditionalAxis2.Text = "Axis 2";
+            this.rbConditionalAxis2.Text = "Axis 2 (Y)";
             this.rbConditionalAxis2.CheckedChanged += new System.EventHandler(this.ConditionalAxisChanged);
             // 
             // ConditionalAxis1
@@ -648,10 +605,10 @@
             this.ConditionalAxis1.Checked = true;
             this.ConditionalAxis1.Location = new System.Drawing.Point(160, 160);
             this.ConditionalAxis1.Name = "ConditionalAxis1";
-            this.ConditionalAxis1.Size = new System.Drawing.Size(56, 16);
+            this.ConditionalAxis1.Size = new System.Drawing.Size(79, 21);
             this.ConditionalAxis1.TabIndex = 12;
             this.ConditionalAxis1.TabStop = true;
-            this.ConditionalAxis1.Text = "Axis 1";
+            this.ConditionalAxis1.Text = "Axis 1 (X)";
             this.ConditionalAxis1.CheckedChanged += new System.EventHandler(this.ConditionalAxisChanged);
             // 
             // ConditionalPositiveSaturationLabel
@@ -810,6 +767,50 @@
             this.GroupPeriodForce.Text = "Periodic Force";
             this.GroupPeriodForce.Visible = false;
             // 
+            // PeriodicOffsetLabel
+            // 
+            this.PeriodicOffsetLabel.AutoSize = true;
+            this.PeriodicOffsetLabel.Location = new System.Drawing.Point(96, 58);
+            this.PeriodicOffsetLabel.Name = "PeriodicOffsetLabel";
+            this.PeriodicOffsetLabel.Size = new System.Drawing.Size(47, 13);
+            this.PeriodicOffsetLabel.TabIndex = 3;
+            this.PeriodicOffsetLabel.Text = "Offset: 0";
+            // 
+            // PeriodicOffset
+            // 
+            this.PeriodicOffset.LargeChange = 100;
+            this.PeriodicOffset.Location = new System.Drawing.Point(24, 67);
+            this.PeriodicOffset.Maximum = 10000;
+            this.PeriodicOffset.Minimum = -10000;
+            this.PeriodicOffset.Name = "PeriodicOffset";
+            this.PeriodicOffset.Size = new System.Drawing.Size(304, 45);
+            this.PeriodicOffset.SmallChange = 10;
+            this.PeriodicOffset.TabIndex = 2;
+            this.PeriodicOffset.TickFrequency = 1000;
+            this.PeriodicOffset.Scroll += new System.EventHandler(this.PeriodicScroll);
+            // 
+            // PeriodicMagnitudeLabel
+            // 
+            this.PeriodicMagnitudeLabel.AutoSize = true;
+            this.PeriodicMagnitudeLabel.Location = new System.Drawing.Point(96, 16);
+            this.PeriodicMagnitudeLabel.Name = "PeriodicMagnitudeLabel";
+            this.PeriodicMagnitudeLabel.Size = new System.Drawing.Size(69, 13);
+            this.PeriodicMagnitudeLabel.TabIndex = 1;
+            this.PeriodicMagnitudeLabel.Text = "Magnitude: 0";
+            // 
+            // PeriodicMagnitude
+            // 
+            this.PeriodicMagnitude.LargeChange = 1000;
+            this.PeriodicMagnitude.Location = new System.Drawing.Point(24, 24);
+            this.PeriodicMagnitude.Maximum = 10000;
+            this.PeriodicMagnitude.Name = "PeriodicMagnitude";
+            this.PeriodicMagnitude.Size = new System.Drawing.Size(304, 45);
+            this.PeriodicMagnitude.SmallChange = 100;
+            this.PeriodicMagnitude.TabIndex = 0;
+            this.PeriodicMagnitude.TickFrequency = 1000;
+            this.PeriodicMagnitude.Value = 5000;
+            this.PeriodicMagnitude.Scroll += new System.EventHandler(this.PeriodicScroll);
+            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -823,8 +824,8 @@
             this.Controls.Add(this.gbTypeContainer);
             this.Name = "frmMain";
             this.Text = "WfaFeedback";
-            this.Closing += new System.ComponentModel.CancelEventHandler(this.frmMain_Closing);
             this.Activated += new System.EventHandler(this.frmMain_Activated);
+            this.Closing += new System.ComponentModel.CancelEventHandler(this.frmMain_Closing);
             this.Load += new System.EventHandler(this.frmMain_Load);
             this.Enter += new System.EventHandler(this.frmMain_Activated);
             ((System.ComponentModel.ISupportInitialize)(this.PeriodicPeriod)).EndInit();
